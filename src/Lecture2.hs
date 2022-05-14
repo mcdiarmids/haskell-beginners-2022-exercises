@@ -72,7 +72,11 @@ lazyProduct (x : xs) = x * lazyProduct xs
 -- >>> duplicate "cab"
 -- "ccaabb"
 duplicate :: [a] -> [a]
-duplicate = concatMap (replicate 2)
+duplicate [] = []
+duplicate (x : xs) = x : x : duplicate xs
+
+-- duplicate' :: [a] -> [a]
+-- duplicate' = concatMap (replicate 2)
 
 -- | Implement function that takes index and a list and removes the
 -- element at the given position. Additionally, this function should also
