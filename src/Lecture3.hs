@@ -33,7 +33,6 @@ module Lecture3
     , appendDiff3
     , apply
     ) where
-import Data.List (nub)
 
 -- VVV If you need to import libraries, do it after this line ... VVV
 
