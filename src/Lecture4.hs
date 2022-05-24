@@ -102,13 +102,12 @@ module Lecture4
     , printProductStats
     ) where
 
-import Data.List.NonEmpty (NonEmpty (..), fromList)
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Semigroup (Max (..), Min (..), Semigroup (..), Sum (..))
 import Text.Read (readMaybe)
 import Data.Maybe (mapMaybe)
 import System.Environment (getArgs)
-import Data.Char (isSpace)
-import Data.List (dropWhileEnd)
+import Control.Monad (guard)
 
 {- In this exercise, instead of writing the entire program from
 scratch, you're offered to complete the missing parts.
@@ -141,37 +140,19 @@ errors. We will simply return an optional result here.
 -}
 
 parseRow :: String -> Maybe Row
-parseRow r = case wordsBy ',' r of
-   [p, t, c] -> do
-      p' <- parseProduct p
-      t' <- parseTradeType $ trim t
-      c' <- parseCost $ trim c
-      pure $ Row p' t' c'
-   _ -> Nothing
+parseRow r = do
+   [p', t, c] <- Just $ wordsBy ',' r
+   guard $ p' /= ""
+   t' <- readMaybe t
+   c' <- readMaybe c
+   guard $ c' >= 0
+   pure $ Row p' t' c'
 
 wordsBy :: Char -> String -> [String]
 wordsBy c s = case dropWhile (== c) s of
    "" -> []
    s' -> w : wordsBy c s''
       where (w, s'') = break (== c) s'
-
-trim :: String -> String
-trim = dropWhileEnd isSpace . dropWhile isSpace
-
-parseProduct :: String -> Maybe String
-parseProduct "" = Nothing
-parseProduct s = Just s
-
-parseTradeType :: String -> Maybe TradeType
-parseTradeType "Buy" = Just Buy
-parseTradeType "Sell" = Just Sell
-parseTradeType _ = Nothing
-
-parseCost :: String -> Maybe Int
-parseCost s = case readMaybe s of
-   Just n -> if n < 0 then Nothing else Just n
-   _ -> Nothing
-
 
 {-
 We have almost all we need to calculate final stats in a simple and
@@ -325,7 +306,7 @@ the file doesn't have any products.
 calculateStats :: String -> String
 calculateStats c = case mapMaybe parseRow $ lines c of
   [] -> "file has no products"
-  (r:rs) -> displayStats . combineRows $ fromList (r:rs)
+  (r:rs) -> displayStats . combineRows $ r :| rs
 
 {- The only thing left is to write a function with side-effects that
 takes a path to a file, reads its content, calculates stats and prints
