@@ -138,7 +138,7 @@ instance Semigroup Reward where
     Reward (rxg <> ryg) (rxp || ryp)
 
 instance Monoid Reward where
-  mempty = Reward (mempty :: Gold) False
+  mempty = Reward mempty False
 
 
 {- | 'List1' is a list that contains at least one element.
@@ -237,7 +237,6 @@ types that can have such an instance.
 -- instance Foldable Reward where -- Kind is `*`
 instance Foldable List1 where
   foldr :: (a -> b -> b) -> b -> List1 a -> b
-  foldr f b (List1 a []) = f a b
   foldr f b (List1 a as) = f a (foldr f b as)
 
   foldMap :: Monoid m => (a -> m) -> List1 a -> m
@@ -268,8 +267,7 @@ types that can have such an instance.
 -- instance Functor Reward where -- Kind is `*`
 instance Functor List1 where
   fmap :: (a -> b) -> List1 a -> List1 b
-  fmap f (List1 a []) = List1 (f a) []
-  fmap f (List1 a (a':as')) = List1 (f a) [] <> fmap f (List1 a' as')
+  fmap f (List1 a as) = List1 (f a) (map f as)
 
 instance Functor Treasure where
   fmap :: (a -> b) -> Treasure a -> Treasure b
@@ -293,5 +291,5 @@ Just [8,9,10]
 [8,20,3]
 
 -}
-apply :: Functor f => a -> f (a -> a) -> f a
+apply :: Functor f => a -> f (a -> b) -> f b
 apply a = fmap (\f -> f a)
